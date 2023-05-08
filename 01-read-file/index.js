@@ -6,15 +6,13 @@ const path = require('path');
 //const filePath = path.resolve('01-read-file/text.txt');
 const filePath = path.join(__dirname, 'text.txt');
 
-//printFile(filePath);
-//printFile2(filePath, onTextRead2);
-//printFile3(filePath, onAllTextRead3);
+printFile(filePath);
+printFile2(filePath, onTextRead2);
+printFile3(filePath, onAllTextRead3);
 printFile4(filePath);
 
 // async, most advanced with pipe (handles `backpressure` automatically)
 function printFile(filePath, encoding='utf8') {
-  console.log('Where is my file');
-  console.log(filePath);
   fs.createReadStream(filePath, encoding).pipe(process.stdout);
 }
 
@@ -27,7 +25,7 @@ function printFile2(filePath, callback) {
       return;
     }
     callback(text);
-  })
+  });
 }
 
 function onTextRead2(text) {
@@ -40,7 +38,6 @@ function printFile3(filePath, callback) {
 
   input.on('data', (chunk) => {
     console.log(chunk);
-    // console.log('next chunk');
   });
   input.on('end', () => {
     callback(null);
