@@ -6,10 +6,10 @@ const path = require('path');
 //const filePath = path.resolve('01-read-file/text.txt');
 const filePath = path.join(__dirname, 'text.txt');
 
-printFile(filePath);
+// printFile(filePath);
 printFile2(filePath, onTextRead2);
-printFile3(filePath, onAllTextRead3);
-printFile4(filePath);
+// printFile3(filePath, onAllTextRead3);
+// printFile4(filePath);
 
 // async, most advanced with pipe (handles `backpressure` automatically)
 function printFile(filePath, encoding='utf8') {
