@@ -1,6 +1,6 @@
 
 const fsp = require('fs').promises;
-//const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const combineCSS = require('../05-merge-styles/index.js');
 
@@ -29,7 +29,6 @@ async function purgeFolder(destDir) {
       .catch(error => console.log(error));
   }
 }
-
 
 async function getFiles(dir) {
   const subdirs = await fsp.readdir(dir, {withFileTypes: true });
@@ -60,6 +59,37 @@ async function copyAssets(sourceAssetsDir, destAssetsDir) {
   }
 }
 
+async function populateTemplate() {
+  const sourceFiles = [
+    path.resolve(__dirname, 'components', 'articles.html'),
+    path.resolve(__dirname, 'components', 'footer.html'),
+    path.resolve(__dirname, 'components', 'header.html')];
+
+  const parrallel = filenames => {
+    return Promise.all(
+      filenames.map(fn => fsp.readFile(fn, 'utf-8'))
+    );
+  };
+  parrallel(sourceFiles)
+    .then (res => {
+      //console.log('all read', res);
+      console.log(res.length);
+      let sourceTemplate = path.resolve(__dirname, 'template.html');
+      let destination = path.resolve(__dirname, 'project-dist', 'index.html');
+      fsp.readFile(sourceTemplate, 'utf-8')
+        .then((template) =>  {
+          //console.log(template);
+          let indexHtml = template.replaceAll ('{{header}}', res[2]);
+          indexHtml = indexHtml.replaceAll ('{{articles}}', res[0]);
+          indexHtml = indexHtml.replaceAll ('{{footer}}', res[1]);
+          fsp.writeFile(destination, indexHtml);
+          //console.log(indexHtml);
+        });
+    })
+    .catch(error => console.log(error));
+}
+
 purgeTheDestinationDirectory(destDir)
   .then (copyAssets(sourceAssetsDir, destAssetsDir))
-  .then (combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css')));
+  .then (combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css')))
+  .then (populateTemplate());
