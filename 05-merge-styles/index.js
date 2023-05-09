@@ -8,9 +8,13 @@ combineCSS(source, dest)
   .catch(console.log('not all errors are actually errors in our case')); // error if file don't exist - in such case creating file
 
 async function combineCSS(sourcePath, destFilePath) {
+
+  //fs.access(destFilePath, (error) =>)
+
   fs.exists(destFilePath, (exists) => {
     if (exists) {
-      fs.promises.unlink(path.resolve(destFilePath))
+
+      fs.promises.unlink(destFilePath)
         .then(combineStyles(sourcePath, destFilePath));
     } else {
       combineStyles(sourcePath, destFilePath);

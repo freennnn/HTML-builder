@@ -9,26 +9,39 @@ const sourceAssetsDir = path.resolve(__dirname, 'assets');
 const destAssetsDir = path.resolve(destDir, 'assets');
 
 //removing everything in dest folder
-async function purgeTheDestinationDirectory(destDir) {
-  fsp.mkdir(destDir)
-    .catch(error => {
-      if (error.code == 'EEXIST') {
-        // the folder already exists, do nothing
-      } else {
-        console.log(error);
-      }
-    })
-    .then(purgeFolder(destDir));
+async function build(destDir) {
+  // purgeTheDestinationDirectory
+  await fsp.rm(destDir, {recursive: true})
+    .catch(error => console.log(error));
+
+  await fsp.mkdir(destDir)
+    .catch(error => console.log(error));
+  
+  await copyAssets(sourceAssetsDir, destAssetsDir);
+
+  await combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css'));
+
+  await populateTemplate();
 }        
 
+/*
 async function purgeFolder(destDir) {
+  
   // console.log('purgeFolder');
   const dir = await fsp.readdir(destDir, { withFileTypes: true });
   for await (let entry of dir) {
-    fsp.unlink(path.resolve(destDir, entry.name))
-      .catch(error => console.log(error));
+    if (entry.isDirectory) {
+      fs.rm('/path/to/delete', { recursive: true }, () => console.log('done'));
+    }
+    const pathDirent = path.resolve(destDir, entry.name);
+    console.log(pathDirent);
+
+    fsp.unlink(pathDirent)
+      .catch(error => console.log(error))
+      .finally(`purgeTheFolder ${pathDirent}`);
   }
 }
+*/
 
 async function getFiles(dir) {
   const subdirs = await fsp.readdir(dir, {withFileTypes: true });
@@ -89,7 +102,4 @@ async function populateTemplate() {
     .catch(error => console.log(error));
 }
 
-purgeTheDestinationDirectory(destDir)
-  .then (copyAssets(sourceAssetsDir, destAssetsDir))
-  .then (combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css')))
-  .then (populateTemplate());
+build(destDir);
