@@ -21,24 +21,8 @@ async function purgeTheDestinationDirectory(destDir) {
     .then(purgeFolder(destDir));
 }        
 
-
-// fs.mkdir(destDir, (error) => {
-//   if (error) {
-//     if (error.code == 'EEXIST') {
-//       // the folder already exists, do nothing
-//     } 
-//     else console.log(error); 
-//   }
-// });
-// const dir = await fsp.readdir(destDir, { withFileTypes: true });
-// for await (let entry of dir) {
-//   fsp.unlink(path.resolve(destDir, entry.name))
-//     .catch(error => console.log(error));
-// }
-//}
-
 async function purgeFolder(destDir) {
-  console.log('purgeFolder');
+  // console.log('purgeFolder');
   const dir = await fsp.readdir(destDir, { withFileTypes: true });
   for await (let entry of dir) {
     fsp.unlink(path.resolve(destDir, entry.name))
@@ -51,40 +35,29 @@ async function getFiles(dir) {
   const subdirs = await fsp.readdir(dir, {withFileTypes: true });
   const files = await Promise.all(subdirs.map((dirent) => {
     const filePath = path.resolve(dir, dirent.name);
-    console.log(filePath);
+    // console.log(filePath);
     return dirent.isDirectory() ? getFiles(filePath): filePath;
   }));
   return files.flat();
 }
 
 async function copyAssets(sourceAssetsDir, destAssetsDir) {
-  console.log(`source ${sourceAssetsDir}`);
-  console.log(`destination ${destAssetsDir}`);
+  // console.log(`source ${sourceAssetsDir}`);
+  // console.log(`destination ${destAssetsDir}`);
   const subdirs = await fsp.readdir(sourceAssetsDir);
 
-  const createFolders = await Promise.all(subdirs.map((dirent) => {
+  await Promise.all(subdirs.map((dirent) => {
     let dirPath = path.resolve(destAssetsDir, dirent);
-    console.log(dirPath);
+    // console.log(dirPath);
     fsp.mkdir(dirPath, {recursive: true})
       .catch(error => console.log(error));
   }));
 
-
-  // for await (let subdir of subdirs) { // not dirent, cause not {withFileTypes} - JS sucks
-  //   let dirPath = path.resolve(destAssetsDir, subdir);
-  //   console.log(dirPath);
-
-  //   fsp.mkdir(dirPath, {recursive: true})
-  //     .catch(error => console.log(error));
-  //}
-  console.log(createFolders);
   const files = await getFiles(sourceAssetsDir);
   for await (let file of files) {
-    console.log(file);
-    const result = await fsp.copyFile(file, path.resolve(destAssetsDir, file.split('assets/')[1]));
-    console.log(result);
+    // console.log(file);
+    await fsp.copyFile(file, path.resolve(destAssetsDir, file.split('assets/')[1]));
   }
-
 }
 
 purgeTheDestinationDirectory(destDir)
