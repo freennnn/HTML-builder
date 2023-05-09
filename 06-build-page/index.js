@@ -1,7 +1,8 @@
 
 const fsp = require('fs').promises;
-const fs = require('fs');
+//const fs = require('fs');
 const path = require('path');
+const combineCSS = require('../05-merge-styles/index.js');
 
 const destDir = path.resolve(__dirname, 'project-dist');
 const sourceAssetsDir = path.resolve(__dirname, 'assets');
@@ -21,20 +22,19 @@ async function purgeTheDestinationDirectory(destDir) {
 }        
 
 
-  // fs.mkdir(destDir, (error) => {
-  //   if (error) {
-  //     if (error.code == 'EEXIST') {
-  //       // the folder already exists, do nothing
-  //     } 
-  //     else console.log(error); 
-  //   }
-  // });
-
-  // const dir = await fsp.readdir(destDir, { withFileTypes: true });
-  // for await (let entry of dir) {
-  //   fsp.unlink(path.resolve(destDir, entry.name))
-  //     .catch(error => console.log(error));
-  // }
+// fs.mkdir(destDir, (error) => {
+//   if (error) {
+//     if (error.code == 'EEXIST') {
+//       // the folder already exists, do nothing
+//     } 
+//     else console.log(error); 
+//   }
+// });
+// const dir = await fsp.readdir(destDir, { withFileTypes: true });
+// for await (let entry of dir) {
+//   fsp.unlink(path.resolve(destDir, entry.name))
+//     .catch(error => console.log(error));
+// }
 //}
 
 async function purgeFolder(destDir) {
@@ -76,7 +76,7 @@ async function copyAssets(sourceAssetsDir, destAssetsDir) {
 
   //   fsp.mkdir(dirPath, {recursive: true})
   //     .catch(error => console.log(error));
-//}
+  //}
   console.log(createFolders);
   const files = await getFiles(sourceAssetsDir);
   for await (let file of files) {
@@ -87,17 +87,6 @@ async function copyAssets(sourceAssetsDir, destAssetsDir) {
 
 }
 
-  // const dir = await fsp.readdir(sourceAssetsDir, { withFileTypes: true });
-  // for await (let entry of dir) {
-  //   if (entry.isDirectory()) {
-  //     fs.mkdir(path.resolve(destAssetsDir, entry.name), {recursive: true}, (error) => {console.log(` ${error}, but we do not really care`)});
-  //     fs.promises.mkdir(path.resolve(destAssetsDir, entry.name), {recursive: true})
-  //       .catch(console.log(' but we do not really care'));
-  //       .then()
-
-  //   }
-  // }
-//}
-
 purgeTheDestinationDirectory(destDir)
-  .then( copyAssets(sourceAssetsDir, destAssetsDir) );
+  .then (copyAssets(sourceAssetsDir, destAssetsDir))
+  .then (combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css')));
