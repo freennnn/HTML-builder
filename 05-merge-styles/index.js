@@ -1,19 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const dirPath = path.resolve(__dirname, 'styles');
-const destFilePath = path.resolve(__dirname, 'project-dist', 'bundle.css');
+const source= path.resolve(__dirname, 'styles');
+const dest = path.resolve(__dirname, 'project-dist', 'bundle.css');
 
-combineCSS(destFilePath)
+combineCSS(source, dest)
   .catch(console.log('not all errors are actually errors in our case')); // error if file don't exist - in such case creating file
 
-async function combineCSS(destFilePath) {
+async function combineCSS(sourcePath, destFilePath) {
   fs.exists(destFilePath, (exists) => {
     if (exists) {
       fs.promises.unlink(path.resolve(destFilePath))
-        .then(combineStyles(dirPath));
+        .then(combineStyles(sourcePath, destFilePath));
     } else {
-      combineStyles(dirPath);
+      combineStyles(sourcePath, destFilePath);
     }
   }); 
 
@@ -25,18 +25,18 @@ async function combineCSS(destFilePath) {
   // }
 }
 
-function combineStyles() {
+function combineStyles(sourcePath, destFilePath) {
   fs.writeFile(destFilePath, '', () => {  //creating result file - no need for async here or stream, but I know you people =)
     console.log('combineStyles');
-    step2();
+    step2(sourcePath, destFilePath);
   });
 }
 
-async function step2() {
-  const dir = await fs.promises.readdir(dirPath, { withFileTypes: true });
+async function step2(sourcePath, destFilePath) {
+  const dir = await fs.promises.readdir(sourcePath, { withFileTypes: true });
   dir.filter(entry => entry.isFile())
     .forEach(entry => {
-      const filePath = path.join(dirPath, entry.name);
+      const filePath = path.join(sourcePath, entry.name);
       const ext = path.extname(filePath);
       if (ext === '.css') {
         // we use Sync variation because we are using shared state - bundle.css file and need write to happen synchronously
@@ -51,3 +51,5 @@ async function step2() {
       }
     });
 }
+
+module.exports = combineCSS;
