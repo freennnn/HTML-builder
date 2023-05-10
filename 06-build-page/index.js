@@ -1,8 +1,8 @@
 
 const fsp = require('fs').promises;
-const fs = require('fs');
+//const fs = require('fs');
 const path = require('path');
-const combineCSS = require('../05-merge-styles/index.js');
+const { combineCSS } = require('../05-merge-styles/index.js');
 
 const destDir = path.resolve(__dirname, 'project-dist');
 const sourceAssetsDir = path.resolve(__dirname, 'assets');
@@ -12,7 +12,7 @@ const destAssetsDir = path.resolve(destDir, 'assets');
 async function build(destDir) {
   // purgeTheDestinationDirectory
   await fsp.rm(destDir, {recursive: true})
-    .catch(error => console.log(error));
+    .catch(error =>  console.log('project-dist folder does not exist yet - so nothing to remove') );
 
   await fsp.mkdir(destDir)
     .catch(error => console.log(error));
@@ -22,26 +22,7 @@ async function build(destDir) {
   await combineCSS(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist', 'style.css'));
 
   await populateTemplate();
-}        
-
-/*
-async function purgeFolder(destDir) {
-  
-  // console.log('purgeFolder');
-  const dir = await fsp.readdir(destDir, { withFileTypes: true });
-  for await (let entry of dir) {
-    if (entry.isDirectory) {
-      fs.rm('/path/to/delete', { recursive: true }, () => console.log('done'));
-    }
-    const pathDirent = path.resolve(destDir, entry.name);
-    console.log(pathDirent);
-
-    fsp.unlink(pathDirent)
-      .catch(error => console.log(error))
-      .finally(`purgeTheFolder ${pathDirent}`);
-  }
 }
-*/
 
 async function getFiles(dir) {
   const subdirs = await fsp.readdir(dir, {withFileTypes: true });
@@ -73,33 +54,30 @@ async function copyAssets(sourceAssetsDir, destAssetsDir) {
 }
 
 async function populateTemplate() {
-  const sourceFiles = [
-    path.resolve(__dirname, 'components', 'articles.html'),
-    path.resolve(__dirname, 'components', 'footer.html'),
-    path.resolve(__dirname, 'components', 'header.html')];
+  try {
+    let sourceTemplatePath = path.resolve(__dirname, 'template.html');
+    let template = await fsp.readFile(sourceTemplatePath, 'utf-8');
+    const doubleQuoteTemplates = /[^{\{]+(?=}\})/g; // regex to find all {{section}}
+    var matches = template.match(doubleQuoteTemplates);
+    let componentsSourceMap = new Map();
+    let componetsPathMap = new Map();
+  
+    matches.forEach(name => componetsPathMap.set(name, path.resolve(__dirname, 'components',`${name}.html`)));
+    for (let [key, value] of componetsPathMap) {
+      let componentSource = await fsp.readFile(value, 'utf-8');
+      componentsSourceMap.set(key, componentSource);
+    }
 
-  const parrallel = filenames => {
-    return Promise.all(
-      filenames.map(fn => fsp.readFile(fn, 'utf-8'))
-    );
-  };
-  parrallel(sourceFiles)
-    .then (res => {
-      //console.log('all read', res);
-      console.log(res.length);
-      let sourceTemplate = path.resolve(__dirname, 'template.html');
-      let destination = path.resolve(__dirname, 'project-dist', 'index.html');
-      fsp.readFile(sourceTemplate, 'utf-8')
-        .then((template) =>  {
-          //console.log(template);
-          let indexHtml = template.replaceAll ('{{header}}', res[2]);
-          indexHtml = indexHtml.replaceAll ('{{articles}}', res[0]);
-          indexHtml = indexHtml.replaceAll ('{{footer}}', res[1]);
-          fsp.writeFile(destination, indexHtml);
-          //console.log(indexHtml);
-        });
-    })
-    .catch(error => console.log(error));
+    for (let [key, value] of componentsSourceMap) {
+      template = template.replaceAll(`{{${key}}}`, value);
+    }
+
+    const destination = path.resolve(__dirname, 'project-dist', 'index.html');
+    await fsp.writeFile(destination, template);
+  }
+  catch (e) {
+    console.log(e);
+  }
 }
 
 build(destDir);
