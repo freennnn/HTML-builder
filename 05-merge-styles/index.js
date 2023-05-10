@@ -1,12 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const source= path.resolve(__dirname, 'styles');
-const dest = path.resolve(__dirname, 'project-dist', 'bundle.css');
-
-combineCSS(source, dest)
-  .catch(console.log('not all errors are actually errors in our case')); // error if file don't exist - in such case creating file
-
 async function combineCSS(sourcePath, destFilePath) {
 
   //fs.access(destFilePath, (error) =>)
@@ -56,4 +50,18 @@ async function step2(sourcePath, destFilePath) {
     });
 }
 
-module.exports = combineCSS;
+const source= path.resolve(__dirname, 'styles');
+const dest = path.resolve(__dirname, 'project-dist', 'bundle.css');
+
+
+
+function init() {
+  combineCSS(source, dest)
+    .catch(console.log('not all errors are actually errors in our case')); // error if file don't exist - in such case creating file
+}
+
+if (require.main === module) {
+  init();
+}
+
+module.exports = { combineCSS };
