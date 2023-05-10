@@ -20,8 +20,8 @@ async function purgeTheDestinationDirectory(destDir) {
   const dir = await fsp.readdir(destDir, { withFileTypes: true });
   for await (let entry of dir) {
     fsp.unlink(path.resolve(destDir, entry.name))
-      .catch(error => console.log(error))
-      .finally(console.log(`removed ${entry.name} easy, no problem`));
+      .catch(error => console.log(error));
+      //.finally(console.log(`removed ${entry.name} easy, no problem`));
   }
 }
 
