@@ -48,8 +48,8 @@ async function copyAssets(sourceAssetsDir, destAssetsDir) {
 
   const files = await getFiles(sourceAssetsDir);
   for await (let file of files) {
-    // console.log(file);
-    await fsp.copyFile(file, path.resolve(destAssetsDir, file.split('assets\\')[1]));
+    let destPath = path.join(destAssetsDir, file.split('assets')[1]);
+    await fsp.copyFile(file, destPath);
   }
 }
 
