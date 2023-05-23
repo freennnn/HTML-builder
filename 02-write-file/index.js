@@ -24,7 +24,7 @@ function writeCallback(error) {
 
 const seeYaMessage = 'May the force be with you';
 function isTimeToSayBye() {
-  console.log(seeYaMessage);
+  // console.log(seeYaMessage);
   process.exit();
 }
 
